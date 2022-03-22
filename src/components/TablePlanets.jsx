@@ -32,28 +32,37 @@ function TablePlanets() {
   };
 
   const filterDropdown = () => {
-    const findoptions = filters.filters.filterByNumericValues.map((disabledOption) => disabledOption.column)
-    return selectDropdown.filter((option) => (!findoptions.includes(option))  && option) 
-  }
-
+    const findOptions = filters.filters.filterByNumericValues
+      .map((disabledOption) => disabledOption.column);
+    return selectDropdown.filter((option) => (!findOptions.includes(option)) && option);
+  };
 
   const handleClick = () => {
     filterPlanet(search, columFilter, comparison, valueFilter);
     if (comparison === 'maior que') {
       const filterPlanetsWithValues = filterSearch()
-      .filter((planet) => isNaN(planet[columFilter]) ? Number(planet[columFilter]) < valueFilter : Number(planet[columFilter]) > valueFilter);
+        .filter((planet) => (Number.isNaN(planet[columFilter])
+          ? Number(planet[columFilter]) < valueFilter
+          : Number(planet[columFilter]) > valueFilter));
       setFilterPlanets(filterPlanetsWithValues);
-
     } else if (comparison === 'menor que') {
       const filterPlanetsWithValues = filterSearch()
-        .filter((planet) => isNaN(planet[columFilter]) ? Number(planet[columFilter]) > valueFilter : Number(planet[columFilter]) < valueFilter);
+        .filter((planet) => (Number.isNaN(planet[columFilter])
+          ? Number(planet[columFilter]) > valueFilter
+          : Number(planet[columFilter]) < valueFilter));
       setFilterPlanets(filterPlanetsWithValues);
-
     } else if (comparison === 'igual a') {
       const filterPlanetsWithValues = filterSearch()
         .filter((planet) => planet[columFilter] === valueFilter);
       setFilterPlanets(filterPlanetsWithValues);
     }
+  };
+
+  const deleteFilter = (option) => {
+    const deleteFilters = filters.filters.filterByNumericValues
+      .filter((disabledOption) => disabledOption !== option);
+    filters.filters.filterByNumericValues = deleteFilters;
+    filterPlanet(filters);
   };
 
   return (
@@ -71,8 +80,8 @@ function TablePlanets() {
         id="columFilter"
         data-testid="column-filter"
         onChange={ ({ target: { value } }) => {
-          setColumFilter(value) 
-        }}
+          setColumFilter(value);
+        } }
         value={ columFilter }
       >
         {
@@ -108,6 +117,20 @@ function TablePlanets() {
       >
         Filtrar
       </button>
+      {
+        filters.filters.filterByNumericValues.map((filter, index) => (
+          <div key={ index }>
+            <p>{` ${filter.column}, ${filter.comparison}, ${filter.value}`}</p>
+            <button
+              type="button"
+              data-testid="filter"
+              onClick={ () => deleteFilter(filter) }
+            >
+              X
+            </button>
+          </div>
+        ))
+      }
       <table>
         <thead>
           <tr>

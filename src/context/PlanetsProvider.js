@@ -28,19 +28,20 @@ function PlanetsProvider({ children }) {
     };
     planetsStarWarsAPI();
   }, []);
-  
+
   const filterPlanet = (search, column, comparison, value) => {
     setFilters({
       filters: {
         filterByName: {
           name: search,
         },
-        filterByNumericValues: [...filters.filters.filterByNumericValues.map((numericValues)=> numericValues),
-          {
-            column,
-            comparison,
-            value,
-          },
+        filterByNumericValues: [...filters.filters.filterByNumericValues
+          .map((numericValues) => numericValues),
+        {
+          column,
+          comparison,
+          value,
+        },
         ],
       },
     });
@@ -49,7 +50,7 @@ function PlanetsProvider({ children }) {
   const contextValue = {
     planets,
     filterPlanet,
-    filters
+    filters,
   };
 
   return (
