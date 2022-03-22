@@ -6,11 +6,34 @@ const headerTable = ['Name', 'Rotation Period', 'Orbital Period', 'Diameter',
   'Population', 'Films', 'Created', 'Edited', 'URL'];
 
 
+
 function TablePlanets() {
   const { planets } = useContext(PlanetsContext);
+  const { filterPlanet } = useContext(PlanetsContext);
+
+  const [search, setSearch] = useState('');
+
+
+  const handleChangeSearch = ({ target: { value } }) => {
+    setSearch(value);
+    filterPlanet(value);
+  };
+
+  const filterSearch = () => {
+    return planets.filter((planet) => planet.name.includes(search));
+  };
+
 
   return (
     <main>
+      <input
+        data-testid="name-filter"
+        type="text"
+        name="search"
+        placeholder="Procure por um país"
+        value={ search }
+        onChange={ handleChangeSearch }
+      />
       <table>
         <thead>
           <tr>
@@ -24,7 +47,7 @@ function TablePlanets() {
 
         <tbody>
           {
-            planets && planets
+            planets && filterSearch()
               .map((planet) => (
                 <tr key={ planet.name }>
                   <td>{planet.name}</td>
