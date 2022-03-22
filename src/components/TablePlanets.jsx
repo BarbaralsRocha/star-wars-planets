@@ -5,14 +5,19 @@ const headerTable = ['Name', 'Rotation Period', 'Orbital Period', 'Diameter',
   'Climate', 'Gravity', 'Terrain', 'Surface Water',
   'Population', 'Films', 'Created', 'Edited', 'URL'];
 
-
+const selectDropdown = ['population', 'orbital_period', 'diameter',
+  'rotation_period', 'surface_water'];
+const comparisonFilter = ['maior que', 'menor que', 'igual a'];
 
 function TablePlanets() {
   const { planets } = useContext(PlanetsContext);
   const { filterPlanet } = useContext(PlanetsContext);
 
   const [search, setSearch] = useState('');
-
+  const [columFilter, setColumFilter] = useState('population');
+  const [comparison, setComparison] = useState('maior que');
+  const [valueFilter, setValueFilter] = useState(0);
+  const [filterPlanets, setFilterPlanets] = useState('');
 
   const handleChangeSearch = ({ target: { value } }) => {
     setSearch(value);
@@ -20,9 +25,29 @@ function TablePlanets() {
   };
 
   const filterSearch = () => {
+    if (filterPlanets) {
+      return filterPlanets;
+    }
     return planets.filter((planet) => planet.name.includes(search));
   };
 
+  const handleClick = () => {
+    filterPlanet(search, columFilter, comparison, valueFilter);
+    if (comparison === 'maior que') {
+      const filterPlanetsWithValues = filterSearch()
+      .filter((planet) => isNaN(planet[columFilter]) ? Number(planet[columFilter]) < valueFilter : Number(planet[columFilter]) > valueFilter);
+      setFilterPlanets(filterPlanetsWithValues);
+      console.log(filterPlanetsWithValues);
+    } else if (comparison === 'menor que') {
+      const filterPlanetsWithValues = filterSearch()
+        .filter((planet) => isNaN(planet[columFilter]) ? Number(planet[columFilter]) > valueFilter : Number(planet[columFilter]) < valueFilter);
+      setFilterPlanets(filterPlanetsWithValues);
+    } else if (comparison === 'igual a') {
+      const filterPlanetsWithValues = filterSearch()
+        .filter((planet) => planet[columFilter] === valueFilter);
+      setFilterPlanets(filterPlanetsWithValues);
+    }
+  };
 
   return (
     <main>
@@ -34,6 +59,46 @@ function TablePlanets() {
         value={ search }
         onChange={ handleChangeSearch }
       />
+      <select
+        name="columFilter"
+        id="columFilter"
+        data-testid="column-filter"
+        onChange={ ({ target: { value } }) => setColumFilter(value) }
+        value={ columFilter }
+      >
+        {
+          selectDropdown.map((option, index) => (
+            <option data-testid={ option } key={ index }>{ option }</option>
+          ))
+        }
+      </select>
+      <select
+        name="comparisonFilter"
+        id="comparisonFilter"
+        data-testid="comparison-filter"
+        onChange={ ({ target: { value } }) => setComparison(value) }
+        value={ comparison }
+      >
+        {
+          comparisonFilter.map((option, index) => (
+            <option data-testid={ option } key={ index }>{ option }</option>
+          ))
+        }
+      </select>
+      <input
+        data-testid="value-filter"
+        type="number"
+        name="valueFilter"
+        value={ valueFilter }
+        onChange={ ({ target: { value } }) => setValueFilter(value) }
+      />
+      <button
+        type="button"
+        data-testid="button-filter"
+        onClick={ handleClick }
+      >
+        Filtrar
+      </button>
       <table>
         <thead>
           <tr>
