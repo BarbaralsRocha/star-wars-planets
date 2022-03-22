@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import PlanetsContext from './PlanetsContext';
 
 const endpointAPI = 'https://swapi-trybe.herokuapp.com/api/planets/';
-const INITIAL_VALUE = [{
+const INITIAL_VALUE = {
   filters: {
     filterByName: {
       name: '',
@@ -16,7 +16,7 @@ const INITIAL_VALUE = [{
       },
     ],
   },
-}];
+};
 
 function PlanetsProvider({ children }) {
   const [planets, setPlanets] = useState([]);
@@ -28,14 +28,14 @@ function PlanetsProvider({ children }) {
     };
     planetsStarWarsAPI();
   }, []);
-
+  
   const filterPlanet = (search, column, comparison, value) => {
-    setFilters([...filters, {
+    setFilters({
       filters: {
         filterByName: {
           name: search,
         },
-        filterByNumericValues: [
+        filterByNumericValues: [...filters.filters.filterByNumericValues.map((numericValues)=> numericValues),
           {
             column,
             comparison,
@@ -43,12 +43,13 @@ function PlanetsProvider({ children }) {
           },
         ],
       },
-    }]);
+    });
   };
 
   const contextValue = {
     planets,
     filterPlanet,
+    filters
   };
 
   return (

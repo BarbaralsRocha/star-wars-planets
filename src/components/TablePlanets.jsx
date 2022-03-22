@@ -12,9 +12,9 @@ const comparisonFilter = ['maior que', 'menor que', 'igual a'];
 function TablePlanets() {
   const { planets } = useContext(PlanetsContext);
   const { filterPlanet } = useContext(PlanetsContext);
-
+  const { filters } = useContext(PlanetsContext);
   const [search, setSearch] = useState('');
-  const [columFilter, setColumFilter] = useState('population');
+  const [columFilter, setColumFilter] = useState(selectDropdown[0]);
   const [comparison, setComparison] = useState('maior que');
   const [valueFilter, setValueFilter] = useState(0);
   const [filterPlanets, setFilterPlanets] = useState('');
@@ -31,17 +31,24 @@ function TablePlanets() {
     return planets.filter((planet) => planet.name.includes(search));
   };
 
+  const filterDropdown = () => {
+    const findoptions = filters.filters.filterByNumericValues.map((disabledOption) => disabledOption.column)
+    return selectDropdown.filter((option) => (!findoptions.includes(option))  && option) 
+  }
+
+
   const handleClick = () => {
     filterPlanet(search, columFilter, comparison, valueFilter);
     if (comparison === 'maior que') {
       const filterPlanetsWithValues = filterSearch()
       .filter((planet) => isNaN(planet[columFilter]) ? Number(planet[columFilter]) < valueFilter : Number(planet[columFilter]) > valueFilter);
       setFilterPlanets(filterPlanetsWithValues);
-      console.log(filterPlanetsWithValues);
+
     } else if (comparison === 'menor que') {
       const filterPlanetsWithValues = filterSearch()
         .filter((planet) => isNaN(planet[columFilter]) ? Number(planet[columFilter]) > valueFilter : Number(planet[columFilter]) < valueFilter);
       setFilterPlanets(filterPlanetsWithValues);
+
     } else if (comparison === 'igual a') {
       const filterPlanetsWithValues = filterSearch()
         .filter((planet) => planet[columFilter] === valueFilter);
@@ -63,11 +70,13 @@ function TablePlanets() {
         name="columFilter"
         id="columFilter"
         data-testid="column-filter"
-        onChange={ ({ target: { value } }) => setColumFilter(value) }
+        onChange={ ({ target: { value } }) => {
+          setColumFilter(value) 
+        }}
         value={ columFilter }
       >
         {
-          selectDropdown.map((option, index) => (
+          filterDropdown().map((option, index) => (
             <option data-testid={ option } key={ index }>{ option }</option>
           ))
         }
