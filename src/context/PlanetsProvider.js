@@ -4,18 +4,10 @@ import PlanetsContext from './PlanetsContext';
 
 const endpointAPI = 'https://swapi-trybe.herokuapp.com/api/planets/';
 const INITIAL_VALUE = {
-  filters: {
-    filterByName: {
-      name: '',
-    },
-    filterByNumericValues: [
-      {
-        column: '',
-        comparison: '',
-        value: 0,
-      },
-    ],
+  filterByName: {
+    name: '',
   },
+  filterByNumericValues: [],
 };
 
 function PlanetsProvider({ children }) {
@@ -31,26 +23,29 @@ function PlanetsProvider({ children }) {
 
   const filterPlanet = (search, column, comparison, value) => {
     setFilters({
-      filters: {
-        filterByName: {
-          name: search,
-        },
-        filterByNumericValues: [...filters.filters.filterByNumericValues
-          .map((numericValues) => numericValues),
-        {
-          column,
-          comparison,
-          value,
-        },
-        ],
+      filterByName: {
+        name: search,
       },
+      filterByNumericValues: [...filters.filterByNumericValues
+        .map((numericValues) => numericValues),
+      {
+        column,
+        comparison,
+        value,
+      },
+      ],
     });
+  };
+
+  const newFilterPlanet = (NewFilter) => {
+    setFilters(NewFilter);
   };
 
   const contextValue = {
     planets,
     filterPlanet,
     filters,
+    newFilterPlanet,
   };
 
   return (

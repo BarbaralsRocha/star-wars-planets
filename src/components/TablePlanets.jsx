@@ -1,5 +1,6 @@
 import React, { useContext, useState } from 'react';
 import PlanetsContext from '../context/PlanetsContext';
+import './TablePlanets.css';
 
 const headerTable = ['Name', 'Rotation Period', 'Orbital Period', 'Diameter',
   'Climate', 'Gravity', 'Terrain', 'Surface Water',
@@ -10,9 +11,7 @@ const selectDropdown = ['population', 'orbital_period', 'diameter',
 const comparisonFilter = ['maior que', 'menor que', 'igual a'];
 
 function TablePlanets() {
-  const { planets } = useContext(PlanetsContext);
-  const { filterPlanet } = useContext(PlanetsContext);
-  const { filters } = useContext(PlanetsContext);
+  const { planets, filterPlanet, filters, newFilterPlanet } = useContext(PlanetsContext);
   const [search, setSearch] = useState('');
   const [columFilter, setColumFilter] = useState(selectDropdown[0]);
   const [comparison, setComparison] = useState('maior que');
@@ -32,9 +31,12 @@ function TablePlanets() {
   };
 
   const filterDropdown = () => {
-    const findOptions = filters.filters.filterByNumericValues
-      .map((disabledOption) => disabledOption.column);
-    return selectDropdown.filter((option) => (!findOptions.includes(option)) && option);
+    if (filters.filterByNumericValues) {
+      const findOptions = filters.filterByNumericValues
+        .map((disabledOption) => disabledOption.column);
+      return selectDropdown.filter((option) => (!findOptions.includes(option)) && option);
+    }
+    return selectDropdown;
   };
 
   const handleClick = () => {
@@ -59,112 +61,154 @@ function TablePlanets() {
   };
 
   const deleteFilter = (option) => {
-    const deleteFilters = filters.filters.filterByNumericValues
+    const deleteFilters = filters.filterByNumericValues
       .filter((disabledOption) => disabledOption !== option);
-    filters.filters.filterByNumericValues = deleteFilters;
-    filterPlanet(filters);
+    setFilterPlanets('');
+    newFilterPlanet({ ...filters, filterByNumericValues: deleteFilters });
+  };
+
+  const deleteAllFilters = () => {
+    setFilterPlanets('');
+    newFilterPlanet({
+      filterByName: {
+        name: '',
+      },
+      filterByNumericValues: [],
+    });
   };
 
   return (
     <main>
-      <input
-        data-testid="name-filter"
-        type="text"
-        name="search"
-        placeholder="Procure por um país"
-        value={ search }
-        onChange={ handleChangeSearch }
-      />
-      <select
-        name="columFilter"
-        id="columFilter"
-        data-testid="column-filter"
-        onChange={ ({ target: { value } }) => {
-          setColumFilter(value);
-        } }
-        value={ columFilter }
-      >
-        {
-          filterDropdown().map((option, index) => (
-            <option data-testid={ option } key={ index }>{ option }</option>
-          ))
-        }
-      </select>
-      <select
-        name="comparisonFilter"
-        id="comparisonFilter"
-        data-testid="comparison-filter"
-        onChange={ ({ target: { value } }) => setComparison(value) }
-        value={ comparison }
-      >
-        {
-          comparisonFilter.map((option, index) => (
-            <option data-testid={ option } key={ index }>{ option }</option>
-          ))
-        }
-      </select>
-      <input
-        data-testid="value-filter"
-        type="number"
-        name="valueFilter"
-        value={ valueFilter }
-        onChange={ ({ target: { value } }) => setValueFilter(value) }
-      />
-      <button
-        type="button"
-        data-testid="button-filter"
-        onClick={ handleClick }
-      >
-        Filtrar
-      </button>
-      {
-        filters.filters.filterByNumericValues.map((filter, index) => (
-          <div key={ index }>
-            <p>{` ${filter.column}, ${filter.comparison}, ${filter.value}`}</p>
-            <button
-              type="button"
-              data-testid="filter"
-              onClick={ () => deleteFilter(filter) }
-            >
-              X
-            </button>
-          </div>
-        ))
-      }
-      <table>
-        <thead>
-          <tr>
-            {
-              headerTable.map((itens, index) => (
-                <th key={ index }>{itens}</th>
-              ))
-            }
-          </tr>
-        </thead>
 
-        <tbody>
+      <form className="forms">
+        <input
+          data-testid="name-filter"
+          type="text"
+          name="search"
+          className="search"
+          placeholder="Procure por um planeta"
+          value={ search }
+          onChange={ handleChangeSearch }
+        />
+        <select
+          name="columFilter"
+          id="columFilter"
+          className="column-filter"
+          data-testid="column-filter"
+          onChange={ ({ target: { value } }) => {
+            setColumFilter(value);
+          } }
+          value={ columFilter }
+        >
           {
-            planets && filterSearch()
-              .map((planet) => (
-                <tr key={ planet.name }>
-                  <td>{planet.name}</td>
-                  <td>{planet.rotation_period}</td>
-                  <td>{planet.orbital_period}</td>
-                  <td>{planet.diameter}</td>
-                  <td>{planet.climate}</td>
-                  <td>{planet.gravity}</td>
-                  <td>{planet.terrain}</td>
-                  <td>{planet.surface_water}</td>
-                  <td>{planet.population}</td>
-                  <td>{planet.films}</td>
-                  <td>{planet.created}</td>
-                  <td>{planet.edited}</td>
-                  <td>{planet.url}</td>
-                </tr>
-              ))
+            filterDropdown().map((option, index) => (
+              <option
+                className="option"
+                data-testid={ option }
+                key={ index }
+              >
+                { option }
+              </option>
+            ))
           }
-        </tbody>
-      </table>
+        </select>
+        <select
+          name="comparisonFilter"
+          id="comparisonFilter"
+          className="comparison"
+          data-testid="comparison-filter"
+          onChange={ ({ target: { value } }) => setComparison(value) }
+          value={ comparison }
+        >
+          {
+            comparisonFilter.map((option, index) => (
+              <option data-testid={ option } key={ index }>{ option }</option>
+            ))
+          }
+        </select>
+        <input
+          data-testid="value-filter"
+          type="number"
+          className="value"
+          name="valueFilter"
+          value={ valueFilter }
+          onChange={ ({ target: { value } }) => setValueFilter(value) }
+        />
+        <button
+          type="button"
+          className="filter"
+          data-testid="button-filter"
+          onClick={ handleClick }
+        >
+          Filtrar
+        </button>
+        {
+          filters.filterByNumericValues && filters.filterByNumericValues
+            .map((filter, index) => (
+              <div key={ index } className="filter-container">
+                <p className="filter-name">
+                  {` ${filter.column}, ${filter.comparison}, ${filter.value}`}
+                </p>
+                <button
+                  type="button"
+                  data-testid="filter"
+                  className="delete-filter"
+                  onClick={ () => deleteFilter(filter) }
+                >
+                  X
+                </button>
+              </div>
+            ))
+        }
+        <button
+          type="button"
+          className="delete-all-filters"
+          data-testid="button-remove-filters"
+          onClick={ deleteAllFilters }
+        >
+          Remover todos os filtros
+        </button>
+
+      </form>
+
+      <div className="table-planets">
+        <table>
+          <thead>
+            <tr>
+              {
+                headerTable.map((itens, index) => (
+                  <th key={ index }>{itens}</th>
+                ))
+              }
+            </tr>
+          </thead>
+
+          <tbody>
+            {
+              planets && filterSearch()
+                .map((planet) => (
+                  <tr key={ planet.name }>
+                    <td>{planet.name}</td>
+                    <td>{planet.rotation_period}</td>
+                    <td>{planet.orbital_period}</td>
+                    <td>{planet.diameter}</td>
+                    <td>{planet.climate}</td>
+                    <td>{planet.gravity}</td>
+                    <td>{planet.terrain}</td>
+                    <td>{planet.surface_water}</td>
+                    <td>{planet.population}</td>
+                    <td>{planet.films}</td>
+                    <td>{planet.created}</td>
+                    <td>{planet.edited}</td>
+                    <td>{planet.url}</td>
+                  </tr>
+                ))
+            }
+          </tbody>
+        </table>
+
+      </div>
+
     </main>
   );
 }
