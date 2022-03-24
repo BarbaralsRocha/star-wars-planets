@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import PlanetsContext from '../context/PlanetsContext';
-import './TablePlanets.css';
+// import './TablePlanets.css';
 
 const headerTable = ['Name', 'Rotation Period', 'Orbital Period', 'Diameter',
   'Climate', 'Gravity', 'Terrain', 'Surface Water',
@@ -11,23 +11,15 @@ const selectDropdown = ['population', 'orbital_period', 'diameter',
 const comparisonFilter = ['maior que', 'menor que', 'igual a'];
 
 function TablePlanets() {
-  const { planets, filterPlanet, filters, newFilterPlanet } = useContext(PlanetsContext);
+  const { planets, filterPlanet, filters, newFilterPlanet, currentPlanets, filterName, filterSearchName } = useContext(PlanetsContext);
   const [search, setSearch] = useState('');
   const [columFilter, setColumFilter] = useState(selectDropdown[0]);
   const [comparison, setComparison] = useState('maior que');
   const [valueFilter, setValueFilter] = useState(0);
-  const [filterPlanets, setFilterPlanets] = useState('');
 
   const handleChangeSearch = ({ target: { value } }) => {
     setSearch(value);
-    filterPlanet(value);
-  };
-
-  const filterSearch = () => {
-    if (filterPlanets) {
-      return filterPlanets;
-    }
-    return planets.filter((planet) => planet.name.includes(search));
+    filterName(value);
   };
 
   const filterDropdown = () => {
@@ -40,35 +32,19 @@ function TablePlanets() {
   };
 
   const handleClick = () => {
-    filterPlanet(search, columFilter, comparison, valueFilter);
-    if (comparison === 'maior que') {
-      const filterPlanetsWithValues = filterSearch()
-        .filter((planet) => (Number.isNaN(planet[columFilter])
-          ? Number(planet[columFilter]) < valueFilter
-          : Number(planet[columFilter]) > valueFilter));
-      setFilterPlanets(filterPlanetsWithValues);
-    } else if (comparison === 'menor que') {
-      const filterPlanetsWithValues = filterSearch()
-        .filter((planet) => (Number.isNaN(planet[columFilter])
-          ? Number(planet[columFilter]) > valueFilter
-          : Number(planet[columFilter]) < valueFilter));
-      setFilterPlanets(filterPlanetsWithValues);
-    } else if (comparison === 'igual a') {
-      const filterPlanetsWithValues = filterSearch()
-        .filter((planet) => planet[columFilter] === valueFilter);
-      setFilterPlanets(filterPlanetsWithValues);
-    }
+    setColumFilter(selectDropdown[selectDropdown
+      .findIndex((column) => column === columFilter) + 1]);
+
+    filterPlanet(columFilter, comparison, valueFilter);
   };
 
   const deleteFilter = (option) => {
     const deleteFilters = filters.filterByNumericValues
       .filter((disabledOption) => disabledOption !== option);
-    setFilterPlanets('');
     newFilterPlanet({ ...filters, filterByNumericValues: deleteFilters });
   };
 
   const deleteAllFilters = () => {
-    setFilterPlanets('');
     newFilterPlanet({
       filterByName: {
         name: '',
@@ -76,6 +52,23 @@ function TablePlanets() {
       filterByNumericValues: [],
     });
   };
+
+  const filterMoreFilters = () => filters.filterByNumericValues.filter(({ column, comparison, value }) => planets.filter((planet) => {
+    if (comparison === 'maior que') {
+      return planet
+        .filter((planetFilter) => (Number.isNaN(planetFilter[column])
+          ? Number(planetFilter[column]) < value
+          : Number(planetFilter[column]) > value));
+    } if (comparison === 'menor que') {
+      return planet
+        .filter((planetFilter) => (Number.isNaN(planetFilter[column])
+          ? Number(planetFilter[column]) > value
+          : Number(planetFilter[column]) < value));
+    } if (comparison === 'igual a') {
+      return planet
+        .filter((planetFilter) => planetFilter[column] === value);
+    }
+  }));
 
   return (
     <main>
@@ -145,13 +138,12 @@ function TablePlanets() {
         {
           filters.filterByNumericValues && filters.filterByNumericValues
             .map((filter, index) => (
-              <div key={ index } className="filter-container">
+              <div key={ index } data-testid="filter" className="filter-container">
                 <p className="filter-name">
                   {` ${filter.column}, ${filter.comparison}, ${filter.value}`}
                 </p>
                 <button
                   type="button"
-                  data-testid="filter"
                   className="delete-filter"
                   onClick={ () => deleteFilter(filter) }
                 >
@@ -185,7 +177,7 @@ function TablePlanets() {
 
           <tbody>
             {
-              planets && filterSearch()
+              planets && currentPlanets
                 .map((planet) => (
                   <tr key={ planet.name }>
                     <td>{planet.name}</td>
