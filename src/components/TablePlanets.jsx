@@ -12,11 +12,13 @@ const comparisonFilter = ['maior que', 'menor que', 'igual a'];
 
 function TablePlanets() {
   const { planets, filterPlanet, filters, newFilterPlanet,
-    currentPlanets, filterName, setFilters } = useContext(PlanetsContext);
+    currentPlanets, filterName, setFilters, sortPlanets } = useContext(PlanetsContext);
   const [search, setSearch] = useState('');
   const [columFilter, setColumFilter] = useState(selectDropdown[0]);
   const [comparison, setComparison] = useState('maior que');
   const [valueFilter, setValueFilter] = useState(0);
+  const [columSort, setColumSort] = useState('population');
+  const [radio, setRadio] = useState('');
 
   const handleChangeSearch = ({ target: { value } }) => {
     setSearch(value);
@@ -37,13 +39,10 @@ function TablePlanets() {
       .findIndex((column) => column === columFilter) + 1]);
     filterPlanet(columFilter, comparison, valueFilter);
   };
-  console.log({ filters });
 
   const deleteFilter = (option) => {
-    console.log({ option });
     const deleteFilters = filters.filterByNumericValues
       .filter((disabledOption) => disabledOption.column !== option.column);
-    console.log({ deleteFilters });
     setFilters({ filterByNumericValues: deleteFilters });
   };
 
@@ -55,9 +54,13 @@ function TablePlanets() {
       filterByNumericValues: [],
     });
   };
+
+  const handleSort = () => {
+    sortPlanets(columSort, radio);
+  };
+
   return (
     <main>
-
       <form className="forms">
         <input
           data-testid="name-filter"
@@ -145,8 +148,60 @@ function TablePlanets() {
         >
           Remover todos os filtros
         </button>
-
       </form>
+      <select
+        name="columSort"
+        data-testid="column-sort"
+        onChange={ ({ target: { value } }) => {
+          setColumSort(value);
+        } }
+        value={ columSort }
+      >
+        {
+          selectDropdown.map((option, index) => (
+            <option
+              className="option"
+              data-testid={ option }
+              key={ index }
+            >
+              { option }
+            </option>
+          ))
+        }
+      </select>
+      <label htmlFor="ascendente">
+        Ascendente
+        <input
+          type="radio"
+          name="radio"
+          id="ASC"
+          data-testid="column-sort-input-asc"
+          value={ radio }
+          onChange={ ({ target: { id } }) => {
+            setRadio(id);
+          } }
+        />
+      </label>
+      <label htmlFor="descendente">
+        Descendente
+        <input
+          type="radio"
+          name="radio"
+          id="DESC"
+          value={ radio }
+          data-testid="column-sort-input-desc"
+          onChange={ ({ target: { id } }) => {
+            setRadio(id);
+          } }
+        />
+      </label>
+      <button
+        type="button"
+        data-testid="column-sort-button"
+        onClick={ () => handleSort() }
+      >
+        Sort
+      </button>
 
       <div className="table-planets">
         <table>
@@ -159,13 +214,12 @@ function TablePlanets() {
               }
             </tr>
           </thead>
-
           <tbody>
             {
               planets && currentPlanets
                 .map((planet) => (
                   <tr key={ planet.name }>
-                    <td>{planet.name}</td>
+                    <td data-testid="planet-name">{planet.name}</td>
                     <td>{planet.rotation_period}</td>
                     <td>{planet.orbital_period}</td>
                     <td>{planet.diameter}</td>
