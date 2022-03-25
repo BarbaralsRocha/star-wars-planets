@@ -12,6 +12,7 @@ function PlanetsProvider({ children }) {
   const [filters, setFilters] = useState(INITIAL_VALUE);
   const [currentPlanets, setCurrentPlanets] = useState([]);
   const [filterSearchName, setFilterSearchName] = useState({});
+
   useEffect(() => {
     const planetsStarWarsAPI = async () => {
       const { results } = await fetch(endpointAPI).then((response) => response.json());
@@ -20,6 +21,26 @@ function PlanetsProvider({ children }) {
     };
     planetsStarWarsAPI();
   }, []);
+
+  useEffect(() => {
+    const planetsFiltered = planets.filter((planet) => {
+      const filtrados = filters.filterByNumericValues.every((filtro) => {
+        if (Number.isNaN(planet[filtro.column])) return planet;
+        if (filtro.comparison === 'maior que') {
+          return Number(planet[filtro.column]) > filtro.value;
+        }
+        if (filtro.comparison === 'menor que') {
+          return Number(planet[filtro.column]) < filtro.value;
+        }
+        if (filtro.comparison === 'igual a') {
+          return planet[filtro.column] === filtro.value;
+        }
+        return null;
+      });
+      return filtrados;
+    });
+    setCurrentPlanets(planetsFiltered);
+  }, [filters, planets]);
 
   const filterName = (search) => {
     setFilterSearchName({
@@ -31,36 +52,18 @@ function PlanetsProvider({ children }) {
   };
 
   const filterPlanet = (column, comparison, value) => {
-    setFilters({
-      filterByNumericValues: [...filters.filterByNumericValues
-        .map((numericValues) => numericValues),
-      {
-        column,
-        comparison,
-        value,
-      },
+    const filtrosNumericos = {
+      filterByNumericValues: [...filters.filterByNumericValues,
+        {
+          column,
+          comparison,
+          value,
+        },
       ],
-    });
-    if (comparison === 'maior que') {
-      const planetsFiltered = planets
-        .filter((planet) => (Number.isNaN(planet[column])
-          ? Number(planet[column]) < value
-          : Number(planet[column]) > value));
-      setCurrentPlanets(planetsFiltered);
-    } else if (comparison === 'menor que') {
-      const planetsFiltered = planets
-        .filter((planet) => (Number.isNaN(planet[column])
-          ? Number(planet[column]) > value
-          : Number(planet[column]) < value));
-      setCurrentPlanets(planetsFiltered);
-    } else if (comparison === 'igual a') {
-      const planetsFiltered = planets
-        .filter((planet) => planet[column] === value);
-      setCurrentPlanets(planetsFiltered);
-    }
+    };
+
+    setFilters(filtrosNumericos);
   };
-
-
 
   const newFilterPlanet = (NewFilter) => {
     setFilters(NewFilter);
@@ -74,6 +77,7 @@ function PlanetsProvider({ children }) {
     currentPlanets,
     filterName,
     filterSearchName,
+    setFilters,
   };
 
   return (

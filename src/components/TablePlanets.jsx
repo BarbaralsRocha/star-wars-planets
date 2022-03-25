@@ -11,7 +11,8 @@ const selectDropdown = ['population', 'orbital_period', 'diameter',
 const comparisonFilter = ['maior que', 'menor que', 'igual a'];
 
 function TablePlanets() {
-  const { planets, filterPlanet, filters, newFilterPlanet, currentPlanets, filterName, filterSearchName } = useContext(PlanetsContext);
+  const { planets, filterPlanet, filters, newFilterPlanet,
+    currentPlanets, filterName, setFilters } = useContext(PlanetsContext);
   const [search, setSearch] = useState('');
   const [columFilter, setColumFilter] = useState(selectDropdown[0]);
   const [comparison, setComparison] = useState('maior que');
@@ -34,14 +35,16 @@ function TablePlanets() {
   const handleClick = () => {
     setColumFilter(selectDropdown[selectDropdown
       .findIndex((column) => column === columFilter) + 1]);
-
     filterPlanet(columFilter, comparison, valueFilter);
   };
+  console.log({ filters });
 
   const deleteFilter = (option) => {
+    console.log({ option });
     const deleteFilters = filters.filterByNumericValues
-      .filter((disabledOption) => disabledOption !== option);
-    newFilterPlanet({ ...filters, filterByNumericValues: deleteFilters });
+      .filter((disabledOption) => disabledOption.column !== option.column);
+    console.log({ deleteFilters });
+    setFilters({ filterByNumericValues: deleteFilters });
   };
 
   const deleteAllFilters = () => {
@@ -52,24 +55,6 @@ function TablePlanets() {
       filterByNumericValues: [],
     });
   };
-
-  const filterMoreFilters = () => filters.filterByNumericValues.filter(({ column, comparison, value }) => planets.filter((planet) => {
-    if (comparison === 'maior que') {
-      return planet
-        .filter((planetFilter) => (Number.isNaN(planetFilter[column])
-          ? Number(planetFilter[column]) < value
-          : Number(planetFilter[column]) > value));
-    } if (comparison === 'menor que') {
-      return planet
-        .filter((planetFilter) => (Number.isNaN(planetFilter[column])
-          ? Number(planetFilter[column]) > value
-          : Number(planetFilter[column]) < value));
-    } if (comparison === 'igual a') {
-      return planet
-        .filter((planetFilter) => planetFilter[column] === value);
-    }
-  }));
-
   return (
     <main>
 
